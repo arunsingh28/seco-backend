@@ -1,7 +1,9 @@
 const router = require('express').Router();
 
 const routes = [
-    'auth'
+    'auth',
+    'blogs',
+    'category'
 ];
 
 

@@ -2,6 +2,7 @@
 
 module.exports = (sequelize, DataType) => {
     const Blog = sequelize.define("blog", {
+        
         id: {
             type: DataType.INTEGER,
             autoIncrement: true,
@@ -16,21 +17,19 @@ module.exports = (sequelize, DataType) => {
             type: DataType.TEXT('long'),
             allowNull: false,
         },
-        date: {
-            type: DataType.STRING,
-            allowNull: false,
-        },
         draft: {
             type: DataType.BOOLEAN,
             default: false,
         },
-        link: {
-            type: DataType.STRING,
-            allowNull: false,
+        category: { 
+            type: DataType.JSON, 
+            get: function() {
+                return JSON.parse(this.getDataValue('category'));
+            }, 
+            set: function(val) {
+                return this.setDataValue('category', JSON.stringify(val));
+            }
         },
-        tages: {
-            type: DataType.STRING,
-        }
     })
     return Blog
 }
