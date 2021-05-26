@@ -17,6 +17,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.TEXT('long'),
             allowNull: false,
         },
+        url: {
+            type: DataType.STRING,
+            allowNull: false,
+        },
         draft: {
             type: DataType.BOOLEAN,
             default: false,

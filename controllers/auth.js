@@ -2,16 +2,34 @@ const db = require('../models');
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 const time = require('date-and-time');
+const dbConfig = require('../config/config.json')
 
-
+var Sequelize = require('sequelize');
+var sequelize = new Sequelize(dbConfig.development);
+const { QueryTypes } = require('sequelize');
 
 const _user = db.user;
 const _cat = db.category;
 const _blog = db.blog;
 
 
-exports.login = async (req, res) => {
+blog_count_query = `SELECT count(*) as count FROM blogs`;
+category_count_query = `SELECT count(*) as count FROM categories`;
 
+// create token 
+const getToken = (user) => {
+    let token = jwt.sign(
+        {
+            id: user.email
+        },
+        process.env.JWT_SECRET
+    )
+    return token
+}
+
+
+
+exports.login = async (req, res) => {
     const email = req.body.data.email
     const password = req.body.data.password
 
@@ -24,9 +42,7 @@ exports.login = async (req, res) => {
             return res.json({ status: 'error', error: 'Account not found.' })
         }
         if (await bcrypt.compare(password, user.password)) {
-            const token = await jwt.sign({ id: user.email },
-                process.env.JWT_SECRET
-            )
+            const token = getToken(user)
             return res.json({ status: 'ok', token })
         } else {
             return res.json({ status: 'error', error: 'Password not matching' })
@@ -102,24 +118,19 @@ exports.catDel = async (req, res) => {
 }
 
 exports.dashboard = async (req, res) => {
-    const token = req.headers['token']
+    // rerurn data : user
+    let totalBlog, totalCategory
 
-    try {
-        console.log('\n\ntry block\n\n')
-        const decoded = jwt.verify(token, process.env.JWT_SECRET)
-        const user = await _user.findOne({
-            where: {
-                email: decoded.id
-            }
-        })
-        if (!user) {
-            console.log('invalid user')
-            return res.status(404).json({ status: error, error: 'invalid user' })
-        }
-        return res.status(200).json({ status: 'ok', data: user })
-    } catch (error) {
-        return res.status(404).json({ status: 'error', error: 'server fail' })
-    }
+    await sequelize.query(blog_count_query, { model: _blog, type: QueryTypes.SELECT, raw: true })
+    .then(count => totalBlog = count)
+    await sequelize.query(category_count_query, { model: _cat, type: QueryTypes.SELECT, raw: true }).then(count => totalCategory = count)
+    
+    return res.status(200).json({
+        status: 'ok',
+        user: req.user,
+        blog: totalBlog,
+        category: totalCategory
+    })
 }
 
 exports.blog = async (req, res) => {
@@ -168,7 +179,7 @@ exports.blogShow = async (req, res) => {
     }
 }
 
-exports.blogDelete = async(req, res)=> {
+exports.blogDelete = async (req, res) => {
     try {
         const id = req.params.id
         await _blog.destroy({
@@ -186,3 +197,5 @@ exports.blogDelete = async(req, res)=> {
         return res.status(404).json({ status: 'error', error: 'server error' })
     }
 }
+
+

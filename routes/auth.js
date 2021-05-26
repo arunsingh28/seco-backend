@@ -1,9 +1,13 @@
 const router = require('express').Router();
-const auth = require('../controllers/auth');
+const Authorize = require('../controllers/auth');
 
-router.post('/signup', auth.signup)
-router.post('/login', auth.login);
-router.get('/dash', auth.dashboard)
+const { auth } = require('../middleware/auth')
+
+
+router.route('/signup').post(Authorize.signup)
+router.route('/login').post(Authorize.login)
+router.route('/dash').get(auth, Authorize.dashboard)
+
 
 module.exports = {
   router: router,

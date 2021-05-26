@@ -1,8 +1,8 @@
 {
   "development": {
     "username": "root",
-    "password": "Rajat@123",
-    "database": "searchenginerepo",
+    "password": "#Apple1397",
+    "database": "test",
     "host": "127.0.0.1",
     "dialect": "mysql"
   },
